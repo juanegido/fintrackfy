@@ -15,8 +15,10 @@ export default function SignInPage() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
   
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isCredentialsLoading, setIsCredentialsLoading] = useState(false)
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +33,30 @@ export default function SignInPage() {
       console.error("Sign in error:", error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleCredentialsSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsCredentialsLoading(true)
+    
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        callbackUrl,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        console.error("Sign in error:", result.error)
+      } else if (result?.ok) {
+        router.push(callbackUrl)
+      }
+    } catch (error) {
+      console.error("Sign in error:", error)
+    } finally {
+      setIsCredentialsLoading(false)
     }
   }
 
@@ -80,7 +106,7 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <form onSubmit={handleEmailSignIn} className="space-y-4">
+          <form onSubmit={handleCredentialsSignIn} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -92,13 +118,31 @@ export default function SignInPage() {
                 required
               />
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" disabled={isCredentialsLoading} className="w-full">
+              {isCredentialsLoading ? (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               Sign in with Email
             </Button>
           </form>
+
+          <div className="text-center text-sm">
+            Don't have an account?{" "}
+            <a href="/auth/signup" className="text-primary hover:underline">
+              Sign up
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

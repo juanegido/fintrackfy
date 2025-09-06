@@ -11,22 +11,26 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(cuid())
-  email       String    @unique
-  name        String?
-  companyName String?   @map("company_name")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  name          String?
+  image         String?
+  password      String?
+  emailVerified DateTime? @map("email_verified")
+  companyName   String?   @map("company_name")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  accounts     Account[]
+  bankAccounts BankAccount[]
   projects     Project[]
   sessions     Session[]
+  accounts     Account[]
   
   @@map("users")
 }
 
-model Account {
+model BankAccount {
   id                String   @id @default(cuid())
   userId            String   @map("user_id")
   plaidAccountId    String   @unique @map("plaid_account_id")
@@ -45,7 +49,7 @@ model Account {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 
-  @@map("accounts")
+  @@map("bank_accounts")
 }
 
 model Transaction {
@@ -66,7 +70,7 @@ model Transaction {
   updatedAt           DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  account Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account BankAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   project Project? @relation(fields: [projectId], references: [id])
 
   @@map("transactions")
@@ -119,7 +123,27 @@ model Vendor {
   @@map("vendors")
 }
 
-// NextAuth.js models
+ // NextAuth.js models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique @map("session_token")

@@ -111,6 +111,7 @@ export function PlaidLinkButton({ onSuccess, className }: PlaidLinkButtonProps) 
       ) : (
         <Icons.card className="mr-2 h-4 w-4" />
       )}
+      {!ready && "(Loading...)"}
       Connect Bank Account
     </Button>
   )
